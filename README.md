@@ -1,20 +1,28 @@
 # router-service-flow
 The route service is a demo to controller the flow where to go.
 
-## Push 2 app, one is V1, another is V2
-cf push fakea -b java_buildpack_offine -p hello_word.war -n fake
-cf push fakeb -b java_buildpack_offine -p hello_work_2.war -n fakeb
-## push router_service_flow app to cf  the -f is "mark":"url"
-cf push mark-route-service -c "/home/vcap/app/route-service-cf -f '{\"fakea\":\"http://fake.pcf17.com\",\"fakeb\":\"http://fakeb.pcf17.com\"}' " -b binary_buildpack
-## Create CUPS
-cf cups mark-route-service -r https://mark-route-service.pcf17.com
-## Bind the route fake
-cf bind-route-service bosh-lite.com mark-route-service --hostname fake
-
-**Now you can see:**
-"fake.pcf17.com":[{"address":"172.30.51.167:60298","ttl":0,"route_service_url":"https://mark-route-service.pcf17.com"}]
+1.上传我们的flow-route-service应用 比例为2:3
+```
+cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"2\":\"http://fake.bosh-lite.com\",\"3\":\"http://fakeb.bosh-lite.com\"}' " -b binary_buildpack
+```
+2.将我们的flow-route-service设置成一个路由服务
+```
+cf cups mark-route-service -r https://flow-route-service.bosh-lite.com
+```
+3.将这个服务绑定到受影响的路由上
+```
+cf bind-route-service bosh-lite.com flow-route-service --hostname fake
+```
 </br>
-
-## Result are：
-Visit fake.pcf17.com ADD a header ：X-CF-Mark:fakea and the result is ：<h2>Hello World Thomas?</h2>
-Visit fake.pcf17.com ADD a header ：X-CF-Mark:fakeb and the result is ：<h2>Hello World Thomas----- new version </h2>
+4.测试结果：
+```
+ubuntu@pivotal-ops-manager:~$ for i in `seq 1 1000`;do curl -q http://fake.pcf17.com/ 2>/dev/null |grep "Hello";done|sort |uniq -c
+    423 >Hello World Thomas?
+    577 Hello World Thomas----- new version
+```
+```
+ubuntu@pivotal-ops-manager:~$ for i in `seq 1 10000`;do curl -q http://fake.pcf17.com/ 2>/dev/null |grep "Hello";done|sort |uniq -c
+   3951 >Hello World Thomas?</h2>
+   6049 Hello World Thomas----- new version
+```   
+可以看出比例是2/3
