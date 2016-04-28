@@ -1,0 +1,29 @@
+{
+	"ImportPath": "github.com/shinji62/route-service-cf",
+	"GoVersion": "go1.5.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/alecthomas/template",
+			"Rev": "14fd436dd20c3cc65242a9f396b61bfc8a3926fc"
+		},
+		{
+			"ImportPath": "github.com/alecthomas/units",
+			"Rev": "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.2.0-34-ge43390e",
+			"Rev": "e43390e35a4a88f3f95d5ddf9055efb7a1170469"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.0-75-g0fe2044",
+			"Rev": "0fe204460da2c8fa1babcaac196e694de8f1aaa1"
+		},
+		{
+			"ImportPath": "gopkg.in/alecthomas/kingpin.v2",
+			"Comment": "v2.1.8",
+			"Rev": "8852570bd3865e9c4d4cb7cf5001c4295b07cad5"
+		}
+	]
+}
