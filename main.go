@@ -7,19 +7,19 @@ import (
 	"github.com/wdxxs2z/router-service-flow/roundTripper"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"net/http"
-    "encoding/json"
+	"encoding/json"
 )
 
 var (
-	port  = kingpin.Flag("port", "Port to listen").Envar("PORT").Short('p').Required().Int()
+	port = kingpin.Flag("port", "Port to listen").Envar("PORT").Short('p').Required().Int()
 	debug = kingpin.Flag("debug", "Port to listen").Envar("DEBUG").Short('d').Bool()
-    ratio = kingpin.Flag("ratio", "Http flow ratio").Envar("RATIO").Short('r').Required().String()
+	ratio = kingpin.Flag("ratio", "Http flow ratio").Envar("RATIO").Short('r').Required().String()
 )
 
 func main() {
 	kingpin.Version("0.0.1")
 	kingpin.Parse()
-        ratiobyte := []byte(*ratio)
+	ratiobyte := []byte(*ratio)
 	var ratiourl map[string]string
 	if err := json.Unmarshal(ratiobyte, &ratiourl); err != nil {
 		panic(err)
@@ -28,5 +28,5 @@ func main() {
 	roundTripper := roundTripper.NewLoggingRoundTripper(*debug)
 	proxy := proxy.NewReverseProxy(roundTripper, httpClient, *debug, ratiourl)
 
-	log.Fatal(http.ListenAndServe(":"+fmt.Sprintf("%v", *port), proxy))
+	log.Fatal(http.ListenAndServe(":" + fmt.Sprintf("%v", *port), proxy))
 }

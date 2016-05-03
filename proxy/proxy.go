@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"time"
-    "net/url"
-    "math/rand"
+	"net/url"
+	"math/rand"
 	"strconv"
 )
 
-func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug bool, radioMark map[string]string) *httputil.ReverseProxy {
+func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug bool, ratioMark map[string]string) *httputil.ReverseProxy {
 
 	reverseProxy := &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
@@ -22,24 +22,24 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 
 			err := RouterServiceheader.ParseHeadersAndClean(&req.Header)
 			if RouterServiceheader.IsValidRequest() && err == nil {
-                randomNum := rand.Intn(501)
-				log.Println("The randomNum is: %v" , randomNum)
+				ratioNum := rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000)
+				log.Println("The randomNum is: %v", ratioNum)
 				sum := int64(0)
-				for ratio,_ := range radioMark {
-					ratioNum,err := strconv.ParseInt(ratio,10,32)
+				for ratio, _ := range ratioMark {
+					ratioNum, err := strconv.ParseInt(ratio, 10, 32)
 					if err == nil {
 						sum += ratioNum
-					}else{
+					} else {
 						panic(err)
 					}
 				}
-				mod := int64(randomNum) % sum
+				mod := ratioNum % sum
 				log.Println("The mod is : %v", mod)
-				for radio,ul := range radioMark {
-					intratio,err := strconv.ParseInt(radio,10,32)
+				for ratio, ul := range ratioMark {
+					intratio, err := strconv.ParseInt(ratio, 10, 32)
 					if err == nil {
 						intratio = int64(intratio)
-					}else {
+					} else {
 						panic(err)
 					}
 					// case 1
@@ -48,22 +48,22 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 							req.URL, err = url.Parse(ul)
 							req.Host = req.URL.Host
 							break
-						}else{
-							index := strconv.Itoa(int(sum)-int(intratio))
-							req.URL, err = url.Parse(radioMark[index])
+						} else {
+							index := strconv.Itoa(int(sum) - int(intratio))
+							req.URL, err = url.Parse(ratioMark[index])
 							req.Host = req.URL.Host
 							break
 						}
 					}
 					// case 2
 					if intratio < (sum - intratio) {
-						if mod < (sum -intratio){
+						if mod < (sum - intratio) {
 							req.URL, err = url.Parse(ul)
 							req.Host = req.URL.Host
 							break
-						}else{
-							index := strconv.Itoa(int(sum)-int(intratio))
-							req.URL, err = url.Parse(radioMark[index])
+						} else {
+							index := strconv.Itoa(int(sum) - int(intratio))
+							req.URL, err = url.Parse(ratioMark[index])
 							req.Host = req.URL.Host
 							break
 						}
