@@ -7,7 +7,6 @@ import (
 	"sync"
 	"reflect"
 	log "github.com/Sirupsen/logrus"
-	"fmt"
 )
 
 const DEFAULT_NUMBER  = 1000
@@ -34,14 +33,8 @@ func (n *Normal) AddNode(node *Node) bool {
 	if _,ok := n.Resources[node.Index];ok {
 		return false
 	}
-	fmt.Println("node---")
-	fmt.Println(node)
 	nodes := n.Nodes
 	nodes.PushBack(node)
-	fmt.Println("nodes---")
-	fmt.Println(nodes)
-	fmt.Println("Value----")
-	fmt.Println(nodes.Front().Value)
 	n.Resources[node.Index] = true
 	return true
 }
@@ -49,8 +42,6 @@ func (n *Normal) AddNode(node *Node) bool {
 func (n *Normal) GetWinUrl() string {
 	sum := int64(0)
 	nodes := n.Nodes
-	fmt.Println(nodes)
-	fmt.Println(nodes.Front().Value)
 	for e := nodes.Front(); e != nil; e = e.Next(){
 		weight := reflect.ValueOf(e.Value).Elem().FieldByName("Weight").Int()
 		sum += weight
