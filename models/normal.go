@@ -40,6 +40,9 @@ func (n *Normal) AddNode(node *Node) bool {
 }
 
 func (n *Normal) GetWinUrl() string {
+	n.Lock()
+	defer n.Unlock()
+
 	sum := int64(0)
 	nodes := n.Nodes
 	for e := nodes.Front(); e != nil; e = e.Next(){

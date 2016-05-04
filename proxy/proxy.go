@@ -4,13 +4,18 @@ import (
 	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"github.com/wdxxs2z/router-service-flow/headers"
+	"github.com/wdxxs2z/router-service-flow/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"time"
 	"net/url"
-	"math/rand"
 	"strconv"
+)
+
+const (
+	VcapCookieId    = "__VCAP_ID__"
+	StickyCookieKey = "JSESSIONID"
 )
 
 func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug bool, ratioMark map[string]string) *httputil.ReverseProxy {
@@ -21,54 +26,26 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 			RouterServiceheader := headers.NewRouteServiceHeaders()
 
 			err := RouterServiceheader.ParseHeadersAndClean(&req.Header)
+
+			//session
+			if _, err := req.Cookie(StickyCookieKey); err == nil {
+				if sticky, err := req.Cookie(VcapCookieId); err == nil {
+					log.Println(sticky.Value)
+				}
+			}
+
 			if RouterServiceheader.IsValidRequest() && err == nil {
-				ratioNum := rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(1000)
-				log.Println("The randomNum is: %v", ratioNum)
-				sum := int64(0)
-				for ratio, _ := range ratioMark {
-					ratioNum, err := strconv.ParseInt(ratio, 10, 32)
-					if err == nil {
-						sum += ratioNum
-					} else {
-						panic(err)
-					}
-				}
-				mod := ratioNum % sum
-				log.Println("The mod is : %v", mod)
+				cNormal := models.NewNormal()
+				i := 0
 				for ratio, ul := range ratioMark {
-					intratio, err := strconv.ParseInt(ratio, 10, 32)
-					if err == nil {
-						intratio = int64(intratio)
-					} else {
-						panic(err)
+					if ratioNumber,err := strconv.ParseInt(ratio,10,32) ; err != nil {
+						cNormal.AddNode(models.NewNode(i,ul,ratioNumber))
 					}
-					// case 1
-					if intratio > (sum - intratio) {
-						if mod >= intratio {
-							req.URL, err = url.Parse(ul)
-							req.Host = req.URL.Host
-							break
-						} else {
-							index := strconv.Itoa(int(sum) - int(intratio))
-							req.URL, err = url.Parse(ratioMark[index])
-							req.Host = req.URL.Host
-							break
-						}
-					}
-					// case 2
-					if intratio < (sum - intratio) {
-						if mod < (sum - intratio) {
-							req.URL, err = url.Parse(ul)
-							req.Host = req.URL.Host
-							break
-						} else {
-							index := strconv.Itoa(int(sum) - int(intratio))
-							req.URL, err = url.Parse(ratioMark[index])
-							req.Host = req.URL.Host
-							break
-						}
-					}
+					i++
 				}
+				winUrl := cNormal.GetWinUrl()
+				req.URL, err = url.Parse(winUrl)
+				req.Host = req.URL.Host
 			} else {
 				req.Body = ioutil.NopCloser(bytes.NewBuffer([]byte{}))
 				req.Host = "No Host"
