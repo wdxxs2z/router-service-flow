@@ -7,12 +7,13 @@ import (
 	"sync"
 	"reflect"
 	log "github.com/Sirupsen/logrus"
+	"fmt"
 )
 
 const DEFAULT_NUMBER  = 1000
 
 type Normal struct  {
-	Nodes      list.List
+	Nodes      *list.List
 	randNumber int64
 	Resources map[int]bool
 	sync.RWMutex
@@ -26,38 +27,54 @@ func NewNormal() *Normal {
 	}
 }
 
-func (n *Normal) AddNode(node Node) bool {
+func (n *Normal) AddNode(node *Node) bool {
 	n.Lock()
 	defer n.Unlock()
 
 	if _,ok := n.Resources[node.Index];ok {
 		return false
 	}
-
-	n.Nodes.PushBack(node)
+	fmt.Println("node---")
+	fmt.Println(node)
+	nodes := n.Nodes
+	nodes.PushBack(node)
+	fmt.Println("nodes---")
+	fmt.Println(nodes)
+	fmt.Println("Value----")
+	fmt.Println(nodes.Front().Value)
 	n.Resources[node.Index] = true
 	return true
 }
 
 func (n *Normal) GetWinUrl() string {
 	sum := int64(0)
-	for e := n.Nodes.Front(); e != nil; e = e.Next(){
-		weight := int64(reflect.ValueOf(&e.Value).Elem().FieldByName("Weight"))
+	nodes := n.Nodes
+	fmt.Println(nodes)
+	fmt.Println(nodes.Front().Value)
+	for e := nodes.Front(); e != nil; e = e.Next(){
+		weight := reflect.ValueOf(e.Value).Elem().FieldByName("Weight").Int()
 		sum += weight
 	}
 	mod := n.randNumber % sum
 	log.Println("The mod is : %v", mod)
 	for e := n.Nodes.Front(); e!= nil; e = e.Next() {
-		weight := int64(reflect.ValueOf(&e.Value).Elem().FieldByName("Weight"))
-		url    := reflect.ValueOf(&e.Value).Elem().FieldByName("Url")
-		if weight >= mod || mod == 0 {
-			return url
+		weight := reflect.ValueOf(e.Value).Elem().FieldByName("Weight").Int()
+		url    := reflect.ValueOf(e.Value).Elem().FieldByName("Url").String()
+		// case 1 b > a
+		if weight > (sum - weight) {
+			if mod >= weight && mod == 0{
+				return url
+			} else {
+				return reflect.ValueOf(e.Next().Value).Elem().FieldByName("Url").String()
+			}
 		}
-		if weight < mod {
-			return url
-		}
-		if weight == 0 {
-			continue
+		// case 2 b < a
+		if weight < (sum - weight) {
+			if mod < (sum - weight) && mod != 0{
+				return url
+			} else {
+				return reflect.ValueOf(e.Next().Value).Elem().FieldByName("Url").String()
+			}
 		}
 	}
 	return ""
