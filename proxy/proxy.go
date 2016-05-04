@@ -38,8 +38,8 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 				cNormal := models.NewNormal()
 				i := 0
 				for ratio, ul := range ratioMark {
-					if ratioNumber,err := strconv.ParseInt(ratio,10,32) ; err != nil {
-						cNormal.AddNode(models.NewNode(i,ul,ratioNumber))
+					if ratioNumber,err := strconv.ParseInt(ratio,10,32) ; err == nil {
+						cNormal.AddNode(models.NewNode(i,ul,int(ratioNumber)))
 					}
 					i++
 				}
