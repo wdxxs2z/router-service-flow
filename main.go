@@ -8,6 +8,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"net/http"
 	"encoding/json"
+	"github.com/wdxxs2z/router-service-flow/policy"
 )
 
 var (
@@ -17,16 +18,17 @@ var (
 )
 
 func main() {
-	kingpin.Version("0.0.1")
+	kingpin.Version("0.1.0")
 	kingpin.Parse()
 	ratiobyte := []byte(*ratio)
-	var ratiourl map[string]string
-	if err := json.Unmarshal(ratiobyte, &ratiourl); err != nil {
+	policyRes := policy.PolicyType{}
+	// {"typename": "modulo","nodes":[{"index":1,"url":"http://aaa.com","weight":2},{"index":1,"url":"http://bbb.com","weight":3}]}
+	if err := json.Unmarshal(ratiobyte, &policyRes); err != nil {
 		panic(err)
 	}
 	httpClient := &http.Client{}
 	roundTripper := roundTripper.NewLoggingRoundTripper(*debug)
-	proxy := proxy.NewReverseProxy(roundTripper, httpClient, *debug, ratiourl)
+	proxy := proxy.NewReverseProxy(roundTripper, httpClient, *debug, policyRes)
 
 	log.Fatal(http.ListenAndServe(":" + fmt.Sprintf("%v", *port), proxy))
 }

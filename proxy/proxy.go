@@ -4,13 +4,12 @@ import (
 	"bytes"
 	log "github.com/Sirupsen/logrus"
 	"github.com/wdxxs2z/router-service-flow/headers"
-	"github.com/wdxxs2z/router-service-flow/models"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"time"
 	"net/url"
-	"strconv"
+	"github.com/wdxxs2z/router-service-flow/policy"
 )
 
 const (
@@ -18,7 +17,7 @@ const (
 	StickyCookieKey = "JSESSIONID"
 )
 
-func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug bool, ratioMark map[string]string) *httputil.ReverseProxy {
+func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug bool, policyType policy.PolicyType) *httputil.ReverseProxy {
 
 	reverseProxy := &httputil.ReverseProxy{
 		Director: func(req *http.Request) {
@@ -35,15 +34,10 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 			}
 
 			if RouterServiceheader.IsValidRequest() && err == nil {
-				cNormal := models.NewNormal()
-				i := 0
-				for ratio, ul := range ratioMark {
-					if ratioNumber,err := strconv.ParseInt(ratio,10,32) ; err == nil {
-						cNormal.AddNode(models.NewNode(i,ul,int(ratioNumber)))
-					}
-					i++
-				}
-				winUrl := cNormal.GetWinUrl()
+				//judgement policy
+				policyModulo := policy.NewModulo(policyType.TypeName,policyType.Nodes)
+				winUrl := policyModulo.WinUrl();
+
 				req.URL, err = url.Parse(winUrl)
 				req.Host = req.URL.Host
 			} else {
