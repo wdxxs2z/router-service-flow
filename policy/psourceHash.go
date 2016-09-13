@@ -24,7 +24,7 @@ func (sourceHash *SourceHash) WinUrl() string {
 	}
 
 	hashcode := hash(sourceHash.remoteHost)
-	pos      := hashcode % nodeLength
+	pos      := hashcode % uint32(nodeLength)
 
 	serverNode := sourceHash.Nodes[pos]
 

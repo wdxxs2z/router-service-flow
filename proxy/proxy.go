@@ -34,8 +34,6 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 				}
 			}
 
-			req.RemoteAddr
-
 			if RouterServiceheader.IsValidRequest() && err == nil {
 				var winUrl string
 				switch policyType.TypeName {

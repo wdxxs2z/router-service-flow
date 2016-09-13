@@ -7,20 +7,20 @@ import (
 )
 
 var (
-	pos = 0
-	mutex sync.Mutex
+	round_weight_pos = 0
+	round_weight_mutex sync.Mutex
 )
 
-type RoundRobinWeght struct{
+type RoundRobinWeight struct{
 	PolicyType
 }
 
-func NewRoundRobinWeight(typeName string, nodes []models.Node) *RoundRobinWeght{
-	return &RoundRobinWeght{PolicyType{typeName, nodes}}
+func NewRoundRobinWeight(typeName string, nodes []models.Node) *RoundRobinWeight{
+	return &RoundRobinWeight{PolicyType{typeName, nodes}}
 }
 
-func (roundRobinWeght *RoundRobinWeght) WinUrl() string {
-	nodeLength := len(roundRobinWeght.PolicyType.Nodes)
+func (roundRobinWeight *RoundRobinWeight) WinUrl() string {
+	nodeLength := len(roundRobinWeight.PolicyType.Nodes)
 
 	if nodeLength <= 0 {
 		fmt.Printf("Fetch node 0.\n")
@@ -30,20 +30,20 @@ func (roundRobinWeght *RoundRobinWeght) WinUrl() string {
 	var serverList []string
 	listLen := 0
 
-	for _,node := range RoundRobinWeght.Nodes {
+	for _,node := range roundRobinWeight.Nodes {
 		nodeWeight := node.Weight
-		for i:=0;i<nodeWeight;i++ {
+		for i := int64(0); i < nodeWeight; i++ {
 			serverList[listLen] = node.Url
 			listLen ++
 		}
 	}
 
-	mutex.Lock()
-	if pos >= nodeLength {
-		pos = 0
+	round_weight_mutex.Lock()
+	if round_weight_pos >= nodeLength {
+		round_weight_pos = 0
 	}
-	winUrl := serverList[pos]
-	pos++
-	mutex.Unlock()
+	winUrl := serverList[round_weight_pos]
+	round_weight_pos ++
+	round_weight_mutex.Unlock()
 	return winUrl
 }
