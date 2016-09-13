@@ -34,6 +34,8 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 				}
 			}
 
+			req.RemoteAddr
+
 			if RouterServiceheader.IsValidRequest() && err == nil {
 				var winUrl string
 				switch policyType.TypeName {
@@ -43,6 +45,12 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 				case policy.POLICY_ROUNDROBIN:
 					policyRoundrobin := policy.NewRoundRobin(policyType.TypeName,policyType.Nodes)
 					winUrl = policyRoundrobin.WinUrl()
+				case policy.POLICY_SOURCEHASH:
+					policySourceHash := policy.NewSourceHash(policyType.TypeName,policyType.Nodes,req.RemoteAddr)
+					winUrl = policySourceHash.WinUrl()
+				case policy.POLICY_ROBIN_WEIGHT:
+					policyRoundrobinweight := policy.NewRoundRobinWeight(policyType.TypeName,policyType.Nodes)
+					winUrl = policyRoundrobinweight.WinUrl()
 				}
 				req.URL, err = url.Parse(winUrl)
 				req.Host = req.URL.Host

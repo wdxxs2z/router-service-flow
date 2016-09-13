@@ -11,9 +11,13 @@ cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"typen
 ```
 cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"typeName\": \"roundrobin\",\"nodes\":[{\"index\":1,\"url\":\"http://www.demo1.com\",\"weight\":2},{\"index\":1,\"url\":\"http://www.demo2.com\",\"weight\":3}]}' " -b binary_buildpack
 ```
-#####3).支持算法：加权哈希
+#####3).支持算法：加权轮询
 ```
-Plan to support.
+cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"typeName\": \"roundrobinweight\",\"nodes\":[{\"index\":1,\"url\":\"http://www.demo1.com\",\"weight\":2},{\"index\":1,\"url\":\"http://www.demo2.com\",\"weight\":3}]}' " -b binary_buildpack
+```
+#####4).支持算法：源哈希
+```
+cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"typeName\": \"sourcehash\",\"nodes\":[{\"index\":1,\"url\":\"http://www.demo1.com\",\"weight\":2},{\"index\":1,\"url\":\"http://www.demo2.com\",\"weight\":3}]}' " -b binary_buildpack
 ```
 2.将我们的flow-route-service设置成一个路由服务
 ```
