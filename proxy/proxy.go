@@ -10,6 +10,7 @@ import (
 	"time"
 	"net/url"
 	"github.com/wdxxs2z/router-service-flow/policy"
+	//"../policy"
 )
 
 const (
@@ -34,10 +35,15 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 			}
 
 			if RouterServiceheader.IsValidRequest() && err == nil {
-				//judgement policy
-				policyModulo := policy.NewModulo(policyType.TypeName,policyType.Nodes)
-				winUrl := policyModulo.WinUrl();
-
+				var winUrl string
+				switch policyType.TypeName {
+				case policy.POLICY_MODULO:
+					policyModulo := policy.NewModulo(policyType.TypeName,policyType.Nodes)
+					winUrl = policyModulo.WinUrl()
+				case policy.POLICY_ROUNDROBIN:
+					policyRoundrobin := policy.NewRoundRobin(policyType.TypeName,policyType.Nodes)
+					winUrl = policyRoundrobin.WinUrl()
+				}
 				req.URL, err = url.Parse(winUrl)
 				req.Host = req.URL.Host
 			} else {
@@ -53,9 +59,7 @@ func NewReverseProxy(transport http.RoundTripper, httpClient *http.Client, debug
 				}
 				log.Printf("%q", dump)
 				log.Printf("Time Elapsed header %v ", time.Since(start))
-
 			}
-
 		},
 		Transport: transport,
 	}

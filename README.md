@@ -2,8 +2,18 @@
 The route service is a demo to controller the flow where to go.
 
 1.上传我们的flow-route-service应用 比例为2:3
+#####1).支持算法：加权取模
 ```
-cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"2\":\"http://fake.bosh-lite.com\",\"3\":\"http://fakeb.bosh-lite.com\"}' " -b binary_buildpack
+cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"typename\": \"modulo\",\"nodes\":[{\"index\":1,\"url\":\"http://www.demo1.com\",\"weight\":2},{\"index\":1,\"url\":\"http://www.demo2.com\",\"weight\":3}]}' " -b binary_buildpack
+
+```
+#####2).支持算法：轮询
+```
+cf push flow-route-service -c "/home/vcap/app/route-service-cf-flow -r '{\"typeName\": \"roundrobin\",\"nodes\":[{\"index\":1,\"url\":\"http://www.demo1.com\",\"weight\":2},{\"index\":1,\"url\":\"http://www.demo2.com\",\"weight\":3}]}' " -b binary_buildpack
+```
+#####3).支持算法：加权哈希
+```
+Plan to support.
 ```
 2.将我们的flow-route-service设置成一个路由服务
 ```
